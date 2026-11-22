@@ -1,0 +1,37 @@
+{
+  "name": "ai-customer-service-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.8.4",
+    "dompurify": "^3.2.5",
+    "echarts": "^6.1.0",
+    "element-plus": "^2.10.2",
+    "marked": "^15.0.7",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "playwright": "^1.65.1",
+    "tailwindcss": "^4.1.4",
+    "typescript": "~5.8.3",
+    "unplugin-auto-import": "^19.1.2",
+    "unplugin-vue-components": "^28.4.1",
+    "vite": "^7.0.0",
+    "vitest": "^5.1.1",
+    "vue-tsc": "^3.0.1"
+  }
+}

@@ -1,0 +1,87 @@
+server:
+  port: 8080
+  # 加法：可信代理头（Tomcat RemoteIpValve）。nginx 反代后按 X-Forwarded-For
+  # 从右向左跳过可信内网代理段还原客户端真实 IP：限流恢复按客户端 IP 计，且防 XFF 伪造。
+  # 8080 仅 loopback / docker 内网可达，信任边界成立。
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      # 加法：可信代理段收窄为 docker 容器网段（172.16-31.x）。默认正则含 192.168.x，
+      # 会把 Docker Desktop 网关（即 nginx 眼中的真实客户端）误当代理多跳一跳，
+      # 导致客户端伪造的 XFF 左段被当成真实 IP。生产若前置云 LB/CDN，需把其内网段加入本正则。
+      internal-proxies: "172\\.(1[6-9]|2[0-9]|3[01])\\.\\d{1,3}\\.\\d{1,3}"
+      # 加法：客户端 IP 直接取 nginx 覆写的 X-Real-IP（单值、不拼接、客户端不可伪造）。
+      # 不用默认 X-Forwarded-For 逐跳回退：单层代理下 nginx 眼中的真实客户端
+      # （本地为 docker 网关 172.x）落在可信段内，会被多跳一跳而误信伪造左段。
+      # 生产若前置 LB/CDN：nginx 加 real_ip 模块（set_real_ip_from LB 段 +
+      # real_ip_header X-Forwarded-For）使 $remote_addr 还原为真实客户端后再覆写 X-Real-IP。
+      remote-ip-header: X-Real-IP
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: DEBUG
+
+spring:
+  application:
+    name: ai-customer-service
+
+  # MySQL 配置（数据库 ai_customer_service 已创建，订单表由 JPA 自动建表）
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_customer_service?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  ai:
+    # 模型供应商选择：聊天用 DeepSeek，向量化用 OpenAI 兼容接口（硅基流动）
+    model:
+      chat: deepseek
+      embedding: openai
+    openai:
+      # 硅基流动 OpenAI 兼容入口，base-url 必须带 /v1
+      base-url: https://api.siliconflow.cn/v1
+      api-key: ${SILICONFLOW_API_KEY}
+      embedding:
+        model: BAAI/bge-m3
+    # 向量库：Chroma（独立服务，宿主机跑用 localhost:8000；app 在容器内时由 CHROMA_HOST 指向 http://chroma）
+    vectorstore:
+      chroma:
+        client:
+          host: ${CHROMA_HOST:http://localhost}
+          port: ${CHROMA_PORT:8000}
+        collection-name: ai_customer_service
+        initialize-schema: true
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    # 本地 ONNX 中文嵌入模型（bge-small-zh，512 维）——当前不生效，embedding 已切到 bge-m3；
+    # 想切回本地时把 spring.ai.model.embedding 改成 transformers 即可
+    embedding:
+      transformer:
+        cache:
+          enabled: true
+          directory: ${user.home}/.cache/spring-ai-onnx
+        onnx:
+          model-uri: https://modelscope.cn/models/Xenova/bge-small-zh-v1.5/resolve/main/onnx/model_quantized.onnx
+        tokenizer:
+          uri: https://modelscope.cn/models/Xenova/bge-small-zh-v1.5/resolve/main/tokenizer.json
+    deepseek:
+      # 密钥仅从环境变量/.env 注入，仓库不留任何兜底 Key
+      api-key: ${DEEPSEEK_API_KEY:}
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.2

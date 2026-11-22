@@ -1,0 +1,6 @@
+.git
+.idea
+src
+*.log
+eval
+README.md

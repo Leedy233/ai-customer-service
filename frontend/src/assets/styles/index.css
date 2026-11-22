@@ -1,0 +1,370 @@
+/* Tailwind v4：仅引入 theme + utilities，跳过 preflight，避免 reset 打坏 Element Plus */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  /* 品牌色：紫只用于主按钮 / 选中态 / 链接 */
+  --color-brand-50: #f1effb;
+  --color-brand-100: #e4e0f7;
+  --color-brand-200: #cdc6ee;
+  --color-brand-500: #6d5bd0;
+  --color-brand-600: #5847b8;
+  --color-brand-700: #4a3aa0;
+  /* 语义色 */
+  --color-success: #12b76a;
+  --color-warning: #f79009;
+  --color-danger: #f04438;
+  /* 文字 / 分割 / 底色 */
+  --color-ink: #1f2329;
+  --color-ink-2: #4e5969;
+  --color-ink-3: #86909c;
+  --color-line: #e5e6eb;
+  --color-surface: #f7f8fa;
+  --color-card: #ffffff;
+  --font-sans: 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', Consolas, 'Courier New', monospace;
+}
+
+/* Element Plus 主题变量对齐新色板 */
+:root {
+  --el-color-primary: #6d5bd0;
+  --el-color-primary-light-3: #9488dd;
+  --el-color-primary-light-5: #b6ade6;
+  --el-color-primary-light-7: #d8d3f0;
+  --el-color-primary-light-8: #e9e6f7;
+  --el-color-primary-light-9: #f1effb;
+  --el-color-primary-dark-2: #5847b8;
+  --el-color-success: #12b76a;
+  --el-color-warning: #f79009;
+  --el-color-danger: #f04438;
+  --el-color-error: #f04438;
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-font-family: var(--font-sans);
+  --el-text-color-primary: #1f2329;
+  --el-text-color-regular: #4e5969;
+  --el-text-color-secondary: #86909c;
+  --el-border-color: #e5e6eb;
+  --el-border-color-light: #e5e6eb;
+  --el-border-color-lighter: #ebedf0;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* 跳过 preflight 但必须保留 border-box，否则 w-full + padding 会横向溢出 */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 跳过 preflight 的补偿：原生 button 去 UA 灰底/边框（.el-button 等类选择器优先级更高，不受影响） */
+@layer base {
+  button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  /* 列表去 UA 圆点与缩进（md-body 内的语义列表单独保留） */
+  nav ul,
+  aside ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* 发送按钮禁用态：浅灰（brief 规定），覆盖 EP primary 禁用浅紫 */
+.el-button.el-button--primary.is-disabled,
+.el-button.el-button--primary.is-disabled:hover {
+  background: #f2f3f5;
+  border-color: #f2f3f5;
+  color: #c9cdd4;
+}
+
+/* 键盘可见焦点 */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 等宽数字 / 订单号 */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 空态主标题：字号字重本身作为视觉元素 */
+.display {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+/* 服务回执 motif：仅用于流程凭证（工具调用 / 排队叫号 / 工单摘要） */
+.receipt {
+  position: relative;
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.receipt-perf {
+  position: relative;
+  border-top: 1px dashed var(--color-line);
+}
+.receipt-perf::before,
+.receipt-perf::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+}
+.receipt-perf::before {
+  left: -6px;
+}
+.receipt-perf::after {
+  right: -6px;
+}
+/* 盖章式状态徽标 */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+/* 展开过渡：只回应动作 */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.18s ease;
+}
+.reveal.open {
+  grid-template-rows: 1fr;
+}
+.reveal > div {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot,
+  .skeleton,
+  .stream-cursor::after,
+  .reveal {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* 骨架屏：低对比脉冲，不做炫光 */
+.skeleton {
+  background: #eceef1;
+  border-radius: 6px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* 思考中三点 */
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-ink-3);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* 移动端最小点击区域 */
+@media (max-width: 768px) {
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* 细滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d8dbe2;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 流式光标 */
+.stream-cursor::after {
+  content: '▍';
+  margin-left: 2px;
+  color: var(--color-brand-500);
+  animation: cursor-blink 1s steps(2, start) infinite;
+}
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Markdown 消息排版（不引 typography 插件，手写精简版） */
+.md-body {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-ink);
+  word-break: break-word;
+}
+.md-body > :first-child {
+  margin-top: 0;
+}
+.md-body > :last-child {
+  margin-bottom: 0;
+}
+.md-body p {
+  margin: 0.5em 0;
+}
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4 {
+  margin: 0.9em 0 0.45em;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.md-body h1 {
+  font-size: 1.25em;
+}
+.md-body h2 {
+  font-size: 1.15em;
+}
+.md-body h3,
+.md-body h4 {
+  font-size: 1.05em;
+}
+.md-body ul,
+.md-body ol {
+  margin: 0.5em 0;
+  padding-left: 1.4em;
+}
+.md-body ul {
+  list-style: disc;
+}
+.md-body ol {
+  list-style: decimal;
+}
+.md-body li {
+  margin: 0.2em 0;
+}
+.md-body code {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+  font-family: var(--font-mono);
+}
+.md-body pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.7em 0.9em;
+  overflow-x: auto;
+  margin: 0.6em 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+.md-body pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.md-body blockquote {
+  margin: 0.6em 0;
+  padding: 0.2em 0.9em;
+  border-left: 3px solid var(--color-brand-200);
+  background: var(--color-surface);
+  border-radius: 0 8px 8px 0;
+  color: var(--color-ink-2);
+}
+.md-body table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+  font-size: 12px;
+  line-height: 18px;
+  font-family: var(--font-mono);
+}
+.md-body th,
+.md-body td {
+  border: 1px solid var(--color-line);
+  padding: 0.4em 0.7em;
+  text-align: left;
+}
+.md-body th {
+  background: var(--color-surface);
+  font-weight: 600;
+}
+.md-body a {
+  color: var(--color-brand-600);
+  text-decoration: none;
+}
+.md-body hr {
+  border: none;
+  border-top: 1px solid var(--color-line);
+  margin: 0.9em 0;
+}
+.md-body strong {
+  font-weight: 600;
+}

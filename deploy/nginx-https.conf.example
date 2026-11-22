@@ -1,0 +1,42 @@
+# HTTPS 模板（未启用、未挂载）：申请证书后取消注释并挂载到 conf.d，同时把 80 改为跳转
+# 影响说明：启用 443 需要本机/服务器放行 443、域名解析与证书文件；这些外部操作需人工确认执行。
+# server {
+#     listen 80;
+#     server_name example.com;
+#     return 301 https://$host$request_uri;
+# }
+#
+# server {
+#     listen 443 ssl;
+#     http2 on;
+#     server_name example.com;
+#
+#     ssl_certificate     /etc/nginx/certs/fullchain.pem;
+#     ssl_certificate_key /etc/nginx/certs/privkey.pem;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_session_cache shared:SSL:10m;
+#     ssl_session_timeout 10m;
+#
+#     root /usr/share/nginx/html;
+#     index index.html;
+#     client_max_body_size 10m;
+#     gzip on;
+#     gzip_min_length 1024;
+#     gzip_types text/plain text/css application/json application/javascript image/svg+xml;
+#
+#     location /assets/ {
+#         expires 30d;
+#         add_header Cache-Control "public, immutable";
+#         try_files $uri =404;
+#     }
+#     location = /index.html { add_header Cache-Control "no-cache"; }
+#     location / { try_files $uri $uri/ /index.html; }
+#     location /api/ {
+#         proxy_pass http://app:8080/ai/;
+#         include /etc/nginx/nginx-proxy.inc;
+#     }
+#     location /actuator { return 403; }
+# }
+#
+# 启用 HTTPS 后后端会话 Cookie 加 Secure（环境变量即可，无需改代码）：
+#   SERVER_SERVLET_SESSION_COOKIE_SECURE=true
